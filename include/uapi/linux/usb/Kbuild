@@ -10,3 +10,4 @@ header-y += gadgetfs.h
 header-y += midi.h
 header-y += tmc.h
 header-y += video.h
+header-y += ccid_bridge.h
