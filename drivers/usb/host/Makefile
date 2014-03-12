@@ -80,3 +80,4 @@ obj-$(CONFIG_USB_FUSBH200_HCD)	+= fusbh200-hcd.o
 obj-$(CONFIG_USB_FOTG210_HCD)	+= fotg210-hcd.o
 obj-$(CONFIG_USB_MAX3421_HCD)	+= max3421-hcd.o
 obj-$(CONFIG_USB_ICE40_HCD)	+= ice40-hcd.o
+obj-$(CONFIG_USB_EHCI_MSM_UICC)	+= ehci-msm-uicc.o
