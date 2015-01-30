@@ -4,6 +4,7 @@ Required properties:
 - compatible: "qcom,msm8996-pinctrl"
 	      "qcom,mdm9640-pinctrl"
 	      "qcom,mdm9607-pinctrl"
+	      "qcom,msm8916-pinctrl"
 	      "qcom,msm8917-pinctrl"
 	      "qcom,sdx20-pinctrl"
 	       "qcom,mdm9650-pinctrl"
