@@ -202,6 +202,7 @@ static int bu21150_fb_suspend(struct device *dev);
 static int bu21150_fb_early_resume(struct device *dev);
 static int fb_notifier_callback(struct notifier_block *self,
 					unsigned long event, void *data);
+bool msm_fb_get_cont_splash(void);
 
 /* static variables */
 static struct spi_device *g_client_bu21150;
