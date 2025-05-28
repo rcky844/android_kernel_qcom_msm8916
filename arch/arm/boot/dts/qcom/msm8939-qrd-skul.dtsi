@@ -81,9 +81,28 @@
 	qcom,mdss-pref-prim-intf = "dsi";
 };
 
-&pmx_mdss {
-	qcom,num-grp-pins = <2>;
-	qcom,pins = <&gp 1>, <&gp 25>;
+&msm_gpio {
+	pmx_mdss {
+		mdss_dsi_active: mdss_dsi_active {
+			mux {
+				pins = "gpio1", "gpio25";
+			};
+
+			config {
+				pins = "gpio1", "gpio25";
+			};
+		};
+
+		mdss_dsi_suspend: mdss_dsi_suspend {
+			mux {
+				pins = "gpio1", "gpio25";
+			};
+
+			config {
+				pins = "gpio1", "gpio25";
+			};
+		};
+	};
 };
 
 &mdss_dsi0 {

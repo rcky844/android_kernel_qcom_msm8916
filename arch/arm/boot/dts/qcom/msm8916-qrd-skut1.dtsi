@@ -64,10 +64,17 @@
 	};
 };
 
-&tlmm_pinmux {
+&msm_gpio {
 	gpio_led_pins {
-		qcom,pins = <&gp 117>, <&gp 118>;
-		qcom,num-grp-pins = <2>;
+		gpio_led_off: led_off {
+			mux {
+				pins = "gpio117", "gpio118";
+			};
+
+			config {
+				pins = "gpio117", "gpio118";
+			};
+		};
 	};
 };
 
@@ -75,9 +82,27 @@
 	qcom,mdss-pref-prim-intf = "dsi";
 };
 
-&pmx_mdss {
-	qcom,num-grp-pins = <2>;
-	qcom,pins = <&gp 8>, <&gp 25>;
+&msm_gpio {
+	pmx_mdss {
+		mdss_dsi_active: mdss_dsi_active {
+			mux {
+				pins = "gpio8", "gpio25";
+			};
+			config {
+				pins = "gpio8", "gpio25";
+			};
+		};
+
+		mdss_dsi_suspend: mdss_dsi_suspend {
+			mux {
+				pins = "gpio8", "gpio25";
+			};
+			config {
+				pins = "gpio8", "gpio25";
+			};
+		};
+
+	};
 };
 
 &mdss_dsi0 {

@@ -107,9 +107,27 @@
 	status = "ok";
 };
 
-&pmx_mdss {
-		qcom,num-grp-pins = <3>;
-		qcom,pins = <&gp 24>, <&gp 25>, <&gp 98>;
+&msm_gpio {
+	pmx_mdss {
+		mdss_dsi_active: mdss_dsi_active {
+			mux {
+				pins = "gpio24", "gpio25", "gpio98";
+			};
+			config {
+				pins = "gpio24", "gpio25", "gpio98";
+			};
+		};
+
+		mdss_dsi_suspend: mdss_dsi_suspend {
+			mux {
+				pins = "gpio24", "gpio25", "gpio98";
+			};
+			config {
+				pins = "gpio24", "gpio25", "gpio98";
+			};
+		};
+
+	};
 };
 
 &mdss_dsi0 {

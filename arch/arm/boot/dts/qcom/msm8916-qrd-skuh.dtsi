@@ -14,45 +14,73 @@
 #include "dsi-panel-innolux-720p-video.dtsi"
 #include "msm8916-camera-sensor-qrd.dtsi"
 
-&tlmm_pinmux {
+&msm_gpio {
 	akm_reset_pin {
-		qcom,pins = <&gp 36>;
-		qcom,pin-func = <0>;
-		qcom,num-grp-pins = <1>;
-		label = "akm_reset_pin";
 		akm_default: akm_default {
-			drive-strength = <6>;
-			bias-pull-up;
+			mux {
+				pins = "gpio36";
+				function = "gpio";
+			};
+
+			config {
+				pins = "gpio36";
+				drive-strength = <6>;
+				bias-pull-up;
+			};
 		};
 		akm_sleep: akm_sleep {
-			drive-strength = <2>;
-			bias-pull-down;
+			mux {
+				pins = "gpio36";
+				function = "gpio";
+			};
+
+			config {
+				pins = "gpio36";
+				drive-strength = <2>;
+				bias-pull-down;
+			};
 		};
 	};
 
 	lis3dh_int1_pin {
-		qcom,pins = <&gp 115>;
-		qcom,num-grp-pins = <1>;
-		label = "lis3dh_int_pin";
 		lis3dh_int1_default: int1_default {
-			drive-strength = <6>;
-			bias-pull-down;
+			mux {
+				pins = "gpio115";
+				function = "gpio";
+			};
+
+			config {
+				pins = "gpio115";
+				drive-strength = <6>;
+				bias-pull-down;
+			};
 		};
 		lis3dh_int1_sleep: int1_sleep {
-			drive-strength = <2>;
-			bias-pull-down;
+			mux {
+				pins = "gpio115";
+				function = "gpio";
+			};
+
+			config {
+				pins = "gpio115";
+				drive-strength = <2>;
+				bias-pull-down;
+			};
 		};
 	};
 
 	tps65132-en-pin {
-		qcom,pins = <&gp 32>, <&gp 97>;
-		qcom,num-grp-pins = <2>;
-		label = "tps65132_en_pins";
-		qcom,pin-func = <0>;
-
 		tps65132_en_default: en-default {
-			drive-strength = <2>;
-			bias-pull-down;
+			mux {
+				pins = "gpio32", "gpio97";
+				function = "gpio";
+			};
+
+			config {
+				pins = "gpio32", "gpio97";
+				drive-strength = <2>;
+				bias-pull-down;
+			};
 		};
 	};
 };
@@ -149,9 +177,27 @@
 	qcom,mdss-pref-prim-intf = "dsi";
 };
 
-&pmx_mdss {
-	qcom,num-grp-pins = <1>;
-	qcom,pins = <&gp 25>;
+&msm_gpio {
+	pmx_mdss {
+		mdss_dsi_active: mdss_dsi_active {
+			mux {
+				pins = "gpio25";
+			};
+			config {
+				pins = "gpio25";
+			};
+		};
+
+		mdss_dsi_suspend: mdss_dsi_suspend {
+			mux {
+				pins = "gpio25";
+			};
+			config {
+				pins = "gpio25";
+			};
+		};
+
+	};
 };
 
 &mdss_dsi0 {
