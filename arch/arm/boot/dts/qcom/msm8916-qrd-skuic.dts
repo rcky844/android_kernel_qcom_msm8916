@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2016, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2014, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -10,12 +10,15 @@
  * GNU General Public License for more details.
  */
 
-void msm_secondary_startup(void);
-void write_pen_release(int val);
+/dts-v1/;
 
-void msm_cpu_die(unsigned int cpu);
-int msm_cpu_kill(unsigned int cpu);
+#include "msm8916-qrd-skuic.dtsi"
+#include "msm8916-512mb-memory.dtsi"
 
-extern struct smp_operations msm8909_smp_ops;
-extern struct smp_operations msm8916_smp_ops;
-extern struct smp_operations msm8936_smp_ops;
+/ {
+	model = "Qualcomm Technologies, Inc. MSM 8916 QRD SKUIC";
+	compatible = "qcom,msm8916-qrd-skuic", "qcom,msm8916-qrd", "qcom,msm8916", "qcom,qrd";
+	qcom,board-id = <0x11010b 0x105>;
+};
+
+/delete-node/ &mba_mss;
