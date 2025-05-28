@@ -288,6 +288,9 @@ dtb-$(CONFIG_ARCH_MDM9607) += mdm9607-rumi.dtb \
 	mdm9206-rcm.dtb \
 	mdm9207c-mtp.dtb
 
+ifeq ($(CONFIG_MACH_WT88047),y)
+dtb-$(CONFIG_ARCH_MSM8916) += msm8916-wt88047.dtb
+else
 dtb-$(CONFIG_ARCH_MSM8916) += msm8916-cdp.dtb \
 	msm8916-cdp-smb1360.dtb \
 	msm8916-mtp.dtb \
@@ -337,6 +340,7 @@ dtb-$(CONFIG_ARCH_MSM8916) += msm8916-cdp.dtb \
 	msm8952-cdp.dtb \
 	msm8952-ext-codec-cdp.dtb \
 	msm8952-mtp.dtb
+endif
 
 dtb-$(CONFIG_ARCH_MSM8909) += msm8909-pm8916-mtp.dtb \
 	msm8909-cdp.dtb \
