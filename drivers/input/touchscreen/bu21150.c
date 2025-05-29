@@ -606,7 +606,7 @@ static int bu21150_pinctrl_enable(struct bu21150_data *ts, bool on)
 		 * Wait among pin enablements to comply
 		 * with hardware requirement.
 		 */
-		usleep(BU21150_PIN_ENABLE_DELAY_US);
+		usleep_range(BU21150_PIN_ENABLE_DELAY_US, BU21150_PIN_ENABLE_DELAY_US);
 	}
 
 	if (ts->mod_en_state_active) {
@@ -622,7 +622,7 @@ static int bu21150_pinctrl_enable(struct bu21150_data *ts, bool on)
 		 * Wait among pin enablements to comply
 		 * with hardware requirement.
 		 */
-		usleep(BU21150_PIN_ENABLE_DELAY_US);
+		usleep_range(BU21150_PIN_ENABLE_DELAY_US, BU21150_PIN_ENABLE_DELAY_US);
 	}
 
 	if (ts->disp_vsn_state_active) {
@@ -638,7 +638,7 @@ static int bu21150_pinctrl_enable(struct bu21150_data *ts, bool on)
 		 * Wait among pin enablements to comply
 		 * with hardware requirement.
 		 */
-		usleep(BU21150_PIN_ENABLE_DELAY_US);
+		usleep_range(BU21150_PIN_ENABLE_DELAY_US, BU21150_PIN_ENABLE_DELAY_US);
 	}
 
 	if (ts->ddic_rst_state_active) {
@@ -703,7 +703,7 @@ static int bu21150_gpio_enable(struct bu21150_data *ts, bool on)
 		 * Wait among pin enablements to comply
 		 * with hardware requirement.
 		 */
-		usleep(BU21150_PIN_ENABLE_DELAY_US);
+		usleep_range(BU21150_PIN_ENABLE_DELAY_US, BU21150_PIN_ENABLE_DELAY_US);
 	}
 
 	if (of_find_property(ts->client->dev.of_node, "mod_en", NULL)) {
@@ -720,7 +720,7 @@ static int bu21150_gpio_enable(struct bu21150_data *ts, bool on)
 		 * Wait among pin enablements to comply
 		 * with hardware requirement.
 		 */
-		usleep(BU21150_PIN_ENABLE_DELAY_US);
+		usleep_range(BU21150_PIN_ENABLE_DELAY_US, BU21150_PIN_ENABLE_DELAY_US);
 	}
 
 	if (of_find_property(ts->client->dev.of_node, "disp_vsn", NULL)) {
@@ -736,7 +736,7 @@ static int bu21150_gpio_enable(struct bu21150_data *ts, bool on)
 		 * Wait among pin enablements to comply
 		 * with hardware requirement.
 		 */
-		usleep(BU21150_PIN_ENABLE_DELAY_US);
+		usleep_range(BU21150_PIN_ENABLE_DELAY_US, BU21150_PIN_ENABLE_DELAY_US);
 	}
 
 	if (of_find_property(ts->client->dev.of_node, "ddic_rst", NULL)) {
@@ -752,7 +752,7 @@ static int bu21150_gpio_enable(struct bu21150_data *ts, bool on)
 		 * Wait among pin enablements to comply
 		 * with hardware requirement.
 		 */
-		usleep(BU21150_PIN_ENABLE_DELAY_US);
+		usleep_range(BU21150_PIN_ENABLE_DELAY_US, BU21150_PIN_ENABLE_DELAY_US);
 	}
 
 	rc = gpio_request(ts->irq_gpio, "bu21150_ts_int");
