@@ -141,14 +141,27 @@
 	qcom,mdss-pref-prim-intf = "dsi";
 };
 
-&pmx_mdss {
-	qcom,num-grp-pins = <1>;
-	qcom,pins = <&gp 25>;
-	mdss_dsi_active: active {
-		output-high;
-	};
-	mdss_dsi_suspend: suspend {
-		output-low;
+&msm_gpio {
+	pmx_mdss {
+		mdss_dsi_active: mdss_dsi_active {
+			mux {
+				pins = "gpio25";
+			};
+			config {
+				pins = "gpio25";
+				output-high;
+			};
+		};
+
+		mdss_dsi_suspend: mdss_dsi_suspend {
+			mux {
+				pins = "gpio25";
+			};
+			config {
+				pins = "gpio25";
+				output-low;
+			};
+		};
 	};
 };
 
@@ -208,72 +221,120 @@
 	qcom,cont-splash-enabled;
 };
 
-&tlmm_pinmux {
+&msm_gpio {
 	ltr559_int_pin {
-		qcom,pins = <&gp 113>;
-		qcom,pin-func = <0>;
-		qcom,num-grp-pins = <1>;
-		label = "ltr559-irq";
 		ltr559_default: ltr559_default {
-			drive-strength = <6>;
-			bias-pull-up;
+			mux {
+				pins = "gpio113";
+				function = "gpio";
+			};
+			config {
+				pins = "gpio113";
+				drive-strength = <6>;
+				bias-pull-up;
+			};
 		};
 		ltr559_sleep: ltr559_sleep {
-			drive-strength = <2>;
-			bias-pull-down;
+			mux {
+				pins = "gpio113";
+				function = "gpio";
+			};
+			config {
+				pins = "gpio113";
+				drive-strength = <2>;
+				bias-pull-down;
+			};
 		};
 	};
 
 	akm_reset_pin {
-		qcom,pins = <&gp 36>;
-		qcom,pin-func = <0>;
-		qcom,num-grp-pins = <1>;
-		label = "akm_reset_pin";
 		akm_default: akm_default {
-			drive-strength = <6>;
-			bias-pull-up;
+			mux {
+				pins = "gpio36";
+				function = "gpio";
+			};
+			config {
+				pins = "gpio36";
+				drive-strength = <6>;
+				bias-pull-up;
+			};
 		};
 		akm_sleep: akm_sleep {
-			drive-strength = <2>;
-			bias-pull-down;
+			mux {
+				pins = "gpio36";
+				function = "gpio";
+			};
+			config {
+				pins = "gpio36";
+				drive-strength = <2>;
+				bias-pull-down;
+			};
 		};
 	};
 
 	fan-otg-pin {
-		qcom,pins = <&gp 114>;
-		qcom,num-grp-pins = <1>;
-		qcom,pin-func = <0>;
-		label = "fan-otg-pin";
 		otg_pin_high: otg_pin_high {
-			drive-strength = <2>;
-			bias-pull-up;
-			output-high;
+			mux {
+				pins = "gpio114";
+				function = "gpio";
+			};
+			config {
+				pins = "gpio114";
+				drive-strength = <2>;
+				bias-pull-up;
+				output-high;
+			};
 		};
 		otg_pin_low: otg_pin_low {
-			drive-strength = <2>;
-			bias-pull-down;
-			output-low;
+			mux {
+				pins = "gpio114";
+				function = "gpio";
+			};
+			config {
+				pins = "gpio114";
+				drive-strength = <2>;
+				bias-pull-down;
+				output-low;
+			};
 		};
 	};
 
 	gpio_led_pins {
-		qcom,pins = <&gp 16>, <&gp 17>;
-		qcom,num-grp-pins = <2>;
+		gpio_led_off: led_off {
+			mux {
+				pins = "gpio16", "gpio17";
+				function = "gpio";
+			};
+
+			config {
+				pins = "gpio16", "gpio17";
+			};
+		};
 	};
 
 	cdc-ext-wt88047-pa {
-		qcom,pins = <&gp 8>, <&gp 117>;
-		qcom,num-grp-pins = <2>;
-		qcom,pin-func = <0>;
-		label = "cdc-ext-wt88047-pa";
 		cdc_ext_wt88047_pa_act: ext_wt88047_pa_on {
-			drive-strength = <8>;
-			output-low;
-			bias-pull-none;
+			mux {
+				pins = "gpio8", "gpio117";
+				function = "gpio";
+			};
+			config {
+				pins = "gpio8", "gpio117";
+				drive-strength = <8>;
+				output-low;
+				bias-pull-none;
+			};
 		};
 		cdc_ext_wt88047_pa_sus: ext_wt88047_pa_off {
-			drive-strength = <2>;
-			bias-disable;
+			mux {
+				pins = "gpio8", "gpio117";
+				function = "gpio";
+			};
+			config {
+				pins = "gpio8", "gpio117";
+				drive-strength = <2>;
+				bias-disable;
+			};
 		};
 	};
 };
@@ -384,13 +445,17 @@
 };
 
 &sdc2_cd_on {
-	/delete-property/ bias-pull-up;
-	bias-pull-down;
+	config {
+		/delete-property/ bias-pull-up;
+		bias-pull-down;
+	};
 };
 
 &sdc2_cd_off {
-	/delete-property/ bias-disable;
-	bias-pull-down;
+	config {
+		/delete-property/ bias-disable;
+		bias-pull-down;
+	};
 };
 
 &sdhc_2 {
