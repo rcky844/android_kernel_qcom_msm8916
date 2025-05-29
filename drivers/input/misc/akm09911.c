@@ -935,7 +935,7 @@ static ssize_t akm_compass_sysfs_enable_store(
 	if (0 == count)
 		return 0;
 
-	if (strict_strtol(buf, AKM_BASE_NUM, &en))
+	if (kstrtol(buf, AKM_BASE_NUM, &en))
 		return -EINVAL;
 
 	en = en ? 1 : 0;
@@ -1049,7 +1049,7 @@ static ssize_t akm_compass_sysfs_delay_store(
 	if (0 == count)
 		return 0;
 
-	if (strict_strtoll(buf, AKM_BASE_NUM, &val))
+	if (kstrtoll(buf, AKM_BASE_NUM, &val))
 		return -EINVAL;
 
 	mutex_lock(&akm->val_mutex);
@@ -1149,7 +1149,7 @@ static ssize_t akm_sysfs_mode_store(
 	if (0 == count)
 		return 0;
 
-	if (strict_strtol(buf, AKM_BASE_NUM, &mode))
+	if (kstrtol(buf, AKM_BASE_NUM, &mode))
 		return -EINVAL;
 
 	if (AKECS_SetMode(akm, (uint8_t)mode) < 0)
