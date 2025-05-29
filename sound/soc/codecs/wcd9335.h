@@ -87,6 +87,7 @@ enum wcd9335_codec_event {
 	WCD9335_CODEC_EVENT_CODEC_UP = 0,
 };
 
+#ifndef CONFIG_SND_SOC_WCD9335_NO_MICBIAS_REGULATOR
 enum tasha_on_demand_supply {
 	ON_DEMAND_MICBIAS = 0,
 	ON_DEMAND_SUPPLIES_MAX,
@@ -100,6 +101,7 @@ struct on_demand_supply {
 	struct regulator *supply;
 	int ondemand_supply_count;
 };
+#endif
 
 /* Dai data structure holds the
  * dai specific info like rate,

@@ -145,11 +145,13 @@ MODULE_PARM_DESC(cpe_debug_mode, "boot cpe in debug mode");
 
 #define TASHA_DIG_CORE_COLLAPSE_TIMER_MS  (5 * 1000)
 
+#ifndef CONFIG_SND_SOC_WCD9335_NO_MICBIAS_REGULATOR
 #define MAX_ON_DEMAND_SUPPLY_NAME_LENGTH    64
 
 static char on_demand_supply_name[][MAX_ON_DEMAND_SUPPLY_NAME_LENGTH] = {
 	"cdc-vdd-mic-bias",
 };
+#endif
 
 enum {
 	POWER_COLLAPSE,
@@ -807,7 +809,9 @@ struct tasha_priv {
 	struct snd_info_entry *version_entry;
 	int power_active_ref;
 
+#ifndef CONFIG_SND_SOC_WCD9335_NO_MICBIAS_REGULATOR
 	struct on_demand_supply on_demand_list[ON_DEMAND_SUPPLIES_MAX];
+#endif
 
 	int (*machine_codec_event_cb)(struct snd_soc_codec *codec,
 				      enum wcd9335_codec_event);
@@ -1366,6 +1370,7 @@ static void tasha_mbhc_hph_l_pull_up_control(struct snd_soc_codec *codec,
 			    0xC0, 0x40);
 }
 
+#ifndef CONFIG_SND_SOC_WCD9335_NO_MICBIAS_REGULATOR
 static int tasha_enable_ext_mb_source(struct snd_soc_codec *codec,
 		bool turn_on)
 {
@@ -1412,6 +1417,7 @@ static int tasha_enable_ext_mb_source(struct snd_soc_codec *codec,
 
 	return ret;
 }
+#endif
 
 static int tasha_micbias_control(struct snd_soc_codec *codec,
 				 int micb_num,
@@ -2048,7 +2054,9 @@ static const struct wcd_mbhc_cb mbhc_cb = {
 	.free_irq = tasha_mbhc_free_irq,
 	.clk_setup = tasha_mbhc_clk_setup,
 	.map_btn_code_to_num = tasha_mbhc_btn_to_num,
+#ifndef CONFIG_SND_SOC_WCD9335_NO_MICBIAS_REGULATOR
 	.enable_mb_source = tasha_enable_ext_mb_source,
+#endif
 	.mbhc_bias = tasha_mbhc_mbhc_bias_control,
 	.set_btn_thr = tasha_mbhc_program_btn_thr,
 	.lock_sleep = tasha_mbhc_lock_sleep,
@@ -5615,6 +5623,7 @@ static int tasha_codec_set_iir_gain(struct snd_soc_dapm_widget *w,
 	return 0;
 }
 
+#ifndef CONFIG_SND_SOC_WCD9335_NO_MICBIAS_REGULATOR
 static int tasha_codec_enable_on_demand_supply(
 	struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
@@ -5665,6 +5674,7 @@ static int tasha_codec_enable_on_demand_supply(
 out:
 	return ret;
 }
+#endif
 
 static int tasha_codec_find_amic_input(struct snd_soc_codec *codec,
 				       int adc_mux_n)
@@ -11323,10 +11333,12 @@ static const struct snd_soc_dapm_widget tasha_dapm_widgets[] = {
 	SND_SOC_DAPM_OUTPUT("LINEOUT4"),
 	SND_SOC_DAPM_OUTPUT("ANC LINEOUT1"),
 	SND_SOC_DAPM_OUTPUT("ANC LINEOUT2"),
+#ifndef CONFIG_SND_SOC_WCD9335_NO_MICBIAS_REGULATOR
 	SND_SOC_DAPM_SUPPLY("MICBIAS_REGULATOR", SND_SOC_NOPM,
 		ON_DEMAND_MICBIAS, 0,
 		tasha_codec_enable_on_demand_supply,
 		SND_SOC_DAPM_PRE_PMU | SND_SOC_DAPM_POST_PMD),
+#endif
 
 	SND_SOC_DAPM_SWITCH("ADC US MUX0", WCD9335_CDC_TX0_TX_PATH_192_CTL, 0,
 			    0, &adc_us_mux0_switch),
@@ -13773,6 +13785,7 @@ err:
 	return ret;
 }
 
+#ifndef CONFIG_SND_SOC_WCD9335_NO_MICBIAS_REGULATOR
 static struct regulator *tasha_codec_find_ondemand_regulator(
 		struct snd_soc_codec *codec, const char *name)
 {
@@ -13792,6 +13805,7 @@ static struct regulator *tasha_codec_find_ondemand_regulator(
 		name);
 	return NULL;
 }
+#endif
 
 static int tasha_codec_probe(struct snd_soc_codec *codec)
 {
@@ -13801,7 +13815,9 @@ static int tasha_codec_probe(struct snd_soc_codec *codec)
 	struct snd_soc_dapm_context *dapm = &codec->dapm;
 	int i, ret;
 	void *ptr = NULL;
+#ifndef CONFIG_SND_SOC_WCD9335_NO_MICBIAS_REGULATOR
 	struct regulator *supply;
+#endif
 
 	control = dev_get_drvdata(codec->dev->parent);
 
@@ -13845,6 +13861,7 @@ static int tasha_codec_probe(struct snd_soc_codec *codec)
 		goto err;
 	}
 
+#ifndef CONFIG_SND_SOC_WCD9335_NO_MICBIAS_REGULATOR
 	supply = tasha_codec_find_ondemand_regulator(codec,
 		on_demand_supply_name[ON_DEMAND_MICBIAS]);
 	if (supply) {
@@ -13852,6 +13869,7 @@ static int tasha_codec_probe(struct snd_soc_codec *codec)
 		tasha->on_demand_list[ON_DEMAND_MICBIAS].ondemand_supply_count =
 				0;
 	}
+#endif
 
 	tasha->fw_data = devm_kzalloc(codec->dev,
 				      sizeof(*(tasha->fw_data)), GFP_KERNEL);
