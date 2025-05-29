@@ -2103,7 +2103,7 @@ int akm_compass_probe(struct i2c_client *client, const struct i2c_device_id *id)
 		dev_err(&client->dev,
 				"%s: check_functionality failed.", __func__);
 		err = -ENODEV;
-		goto exit0;
+		goto err_i2c_check;
 	}
 
 	/* Allocate memory for driver data */
@@ -2112,7 +2112,7 @@ int akm_compass_probe(struct i2c_client *client, const struct i2c_device_id *id)
 		dev_err(&client->dev,
 				"%s: memory allocation failed.", __func__);
 		err = -ENOMEM;
-		goto exit1;
+		goto err_memory_alloc;
 	}
 
 	/**** initialize variables in akm_compass_data *****/
@@ -2142,7 +2142,7 @@ int akm_compass_probe(struct i2c_client *client, const struct i2c_device_id *id)
 		if (err) {
 			dev_err(&client->dev,
 				"Unable to parse platfrom data err=%d\n", err);
-			goto exit2;
+			goto err_devm;
 		}
 	} else {
 		if (client->dev.platform_data) {
@@ -2170,7 +2170,7 @@ int akm_compass_probe(struct i2c_client *client, const struct i2c_device_id *id)
 		err = pinctrl_select_state(s_akm->pinctrl, s_akm->pin_default);
 		if (err) {
 			dev_err(&client->dev, "Can't select pinctrl state\n");
-			goto exit2;
+			goto err_devm;
 		}
 	}
 
@@ -2180,21 +2180,21 @@ int akm_compass_probe(struct i2c_client *client, const struct i2c_device_id *id)
 	/* check connection */
 	err = akm_compass_power_init(s_akm, 1);
 	if (err < 0)
-		goto exit2;
+		goto err_devm;
 	err = akm_compass_power_set(s_akm, 1);
 	if (err < 0)
-		goto exit3;
+		goto err_compass_pwr_init;
 
 	err = akm09911_i2c_check_device(client);
 	if (err < 0)
-		goto exit4;
+		goto err_compass_pwr_off;
 
 	/***** input *****/
 	err = akm_compass_input_init(&s_akm->input);
 	if (err) {
 		dev_err(&client->dev,
 			"%s: input_dev register failed", __func__);
-		goto exit4;
+		goto err_compass_pwr_off;
 	}
 	input_set_drvdata(s_akm->input, s_akm);
 
@@ -2215,7 +2215,7 @@ int akm_compass_probe(struct i2c_client *client, const struct i2c_device_id *id)
 		if (err < 0) {
 			dev_err(&client->dev,
 				"%s: request irq failed.", __func__);
-			goto exit5;
+			goto err_unregister_device;
 		}
 	} else if (s_akm->auto_report) {
 		init_waitqueue_head(&s_akm->poll_wq);
@@ -2232,7 +2232,7 @@ int akm_compass_probe(struct i2c_client *client, const struct i2c_device_id *id)
 	if (err) {
 		dev_err(&client->dev,
 			"%s: akm_compass_dev register failed", __func__);
-		goto exit6;
+		goto err_irq_free;
 	}
 
 	/***** sysfs *****/
@@ -2240,7 +2240,7 @@ int akm_compass_probe(struct i2c_client *client, const struct i2c_device_id *id)
 	if (0 > err) {
 		dev_err(&client->dev,
 			"%s: create sysfs failed.", __func__);
-		goto exit7;
+		goto err_destroy_timer;
 	}
 
 	s_akm->cdev = sensors_cdev;
@@ -2254,7 +2254,7 @@ int akm_compass_probe(struct i2c_client *client, const struct i2c_device_id *id)
 
 	if (err) {
 		dev_err(&client->dev, "class device create failed: %d\n", err);
-		goto exit8;
+		goto remove_sysfs;
 	}
 
 	akm_compass_power_set(s_akm, false);
@@ -2262,25 +2262,25 @@ int akm_compass_probe(struct i2c_client *client, const struct i2c_device_id *id)
 	dev_info(&client->dev, "successfully probed.");
 	return 0;
 
-exit8:
+remove_sysfs:
 	remove_sysfs_interfaces(s_akm);
-exit7:
+err_destroy_timer:
 	misc_deregister(&akm_compass_dev);
 	hrtimer_cancel(&s_akm->poll_timer);
 	kthread_stop(s_akm->poll_task);
-exit6:
+err_irq_free:
 	if (s_akm->irq)
 		free_irq(s_akm->irq, s_akm);
-exit5:
+err_unregister_device:
 	input_unregister_device(s_akm->input);
-exit4:
+err_compass_pwr_off:
 	akm_compass_power_set(s_akm, 0);
-exit3:
+err_compass_pwr_init:
 	akm_compass_power_init(s_akm, 0);
-exit2:
+err_devm:
 	kfree(s_akm);
-exit1:
-exit0:
+err_memory_alloc:
+err_i2c_check:
 	return err;
 }
 
