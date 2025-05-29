@@ -1516,6 +1516,7 @@ unsigned int snd_soc_of_parse_daifmt(struct device_node *np,
 				     const char *prefix,
 				     struct device_node **bitclkmaster,
 				     struct device_node **framemaster);
+int soc_check_aux_dev_byname(struct snd_soc_card *card, const char *codec_name);
 int snd_soc_of_get_dai_name(struct device_node *of_node,
 			    const char **dai_name);
 
