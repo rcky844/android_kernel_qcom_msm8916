@@ -348,10 +348,10 @@ static int ehci_msm_uicc_probe(struct platform_device *pdev)
 
 	hcd->rsrc_start = res->start;
 	hcd->rsrc_len = resource_size(res);
-	hcd->regs = devm_request_and_ioremap(&pdev->dev, res);
-	if (!hcd->regs) {
+	hcd->regs = devm_ioremap_resource(&pdev->dev, res);
+	if (IS_ERR(hcd->regs)) {
 		pr_err("Fail to ioremap\n");
-		ret = -ENOMEM;
+		ret = PTR_ERR(hcd->regs);
 		goto select_sleep;
 	}
 
