@@ -105,7 +105,6 @@ struct akm_compass_data {
 	int	gpio_rstn;
 	int	power_enabled;
 	int	auto_report;
-	int	use_hrtimer;
 
 	/* The input event last time */
 	int	last_x;
@@ -879,23 +878,14 @@ static int akm_enable_set(struct sensors_classdev *sensors_cdev,
 		if (akm->auto_report) {
 			mode = akm_select_frequency(akm->delay[MAG_DATA_FLAG]);
 			AKECS_SetMode(akm, mode);
-			if (akm->use_hrtimer)
-				hrtimer_start(&akm->poll_timer,
-					ns_to_ktime(akm->delay[MAG_DATA_FLAG]),
-					HRTIMER_MODE_REL);
-			else
-				queue_delayed_work(akm->work_queue, &akm->dwork,
-					(unsigned long)nsecs_to_jiffies64(
-						akm->delay[MAG_DATA_FLAG]));
+			hrtimer_start(&akm->poll_timer,
+				ns_to_ktime(akm->delay[MAG_DATA_FLAG]),
+				HRTIMER_MODE_REL);
 		}
 	} else {
 		if (akm->auto_report) {
-			if (akm->use_hrtimer) {
-				hrtimer_cancel(&akm->poll_timer);
-				cancel_work_sync(&akm->dwork.work);
-			} else {
-				cancel_delayed_work_sync(&akm->dwork);
-			}
+			hrtimer_cancel(&akm->poll_timer);
+			cancel_work_sync(&akm->dwork.work);
 			AKECS_SetMode(akm, AKM_MODE_POWERDOWN);
 		}
 		ret = akm_compass_power_set(akm, false);
@@ -1489,10 +1479,7 @@ static int akm_compass_suspend(struct device *dev)
 	int ret = 0;
 
 	if (AKM_IS_MAG_DATA_ENABLED() && akm->auto_report) {
-		if (akm->use_hrtimer)
-			hrtimer_cancel(&akm->poll_timer);
-		else
-			cancel_delayed_work_sync(&akm->dwork);
+		hrtimer_cancel(&akm->poll_timer);
 	}
 
 	if (akm->enable_flag) {
@@ -1540,14 +1527,9 @@ static int akm_compass_resume(struct device *dev)
 						mode);
 				goto exit;
 			}
-			if (akm->use_hrtimer)
-				hrtimer_start(&akm->poll_timer,
-					ns_to_ktime(akm->delay[MAG_DATA_FLAG]),
-					HRTIMER_MODE_REL);
-			else
-				queue_delayed_work(akm->work_queue, &akm->dwork,
-					(unsigned long)nsecs_to_jiffies64(
-						akm->delay[MAG_DATA_FLAG]));
+			hrtimer_start(&akm->poll_timer,
+				ns_to_ktime(akm->delay[MAG_DATA_FLAG]),
+				HRTIMER_MODE_REL);
 		}
 	}
 
@@ -1740,7 +1722,6 @@ static int akm_compass_parse_dt(struct device *dev,
 	}
 
 	akm->auto_report = of_property_read_bool(np, "akm,auto-report");
-	akm->use_hrtimer = of_property_read_bool(np, "akm,use-hrtimer");
 	akm->gpio_rstn = of_get_named_gpio_flags(dev->of_node,
 			"akm,gpio_rstn", 0, NULL);
 
@@ -1898,11 +1879,6 @@ static void akm_dev_poll(struct work_struct *work)
 	ret = akm_report_data(akm);
 	if (ret < 0)
 		dev_warn(&akm->i2c->dev, "Failed to report data\n");
-
-	if (!akm->use_hrtimer)
-		queue_delayed_work(akm->work_queue, &akm->dwork,
-			(unsigned long)nsecs_to_jiffies64(
-				akm->delay[MAG_DATA_FLAG]));
 }
 
 static enum hrtimer_restart akm_timer_func(struct hrtimer *timer)
@@ -2240,18 +2216,12 @@ int akm_compass_probe(struct i2c_client *client, const struct i2c_device_id *id)
 			goto exit5;
 		}
 	} else if (s_akm->auto_report) {
-		if (s_akm->use_hrtimer) {
-			hrtimer_init(&s_akm->poll_timer, CLOCK_MONOTONIC,
-					HRTIMER_MODE_REL);
-			s_akm->poll_timer.function = akm_timer_func;
-			s_akm->work_queue = alloc_workqueue("akm_poll_work",
-				WQ_UNBOUND | WQ_MEM_RECLAIM | WQ_HIGHPRI, 1);
-			INIT_WORK(&s_akm->dwork.work, akm_dev_poll);
-		} else {
-			s_akm->work_queue = alloc_workqueue("akm_poll_work",
-					WQ_NON_REENTRANT, 0);
-			INIT_DELAYED_WORK(&s_akm->dwork, akm_dev_poll);
-		}
+		hrtimer_init(&s_akm->poll_timer, CLOCK_MONOTONIC,
+				HRTIMER_MODE_REL);
+		s_akm->poll_timer.function = akm_timer_func;
+		s_akm->work_queue = alloc_workqueue("akm_poll_work",
+			WQ_UNBOUND | WQ_MEM_RECLAIM | WQ_HIGHPRI, 1);
+		INIT_WORK(&s_akm->dwork.work, akm_dev_poll);
 	}
 
 	/***** misc *****/
@@ -2314,12 +2284,8 @@ static int akm_compass_remove(struct i2c_client *client)
 	struct akm_compass_data *akm = i2c_get_clientdata(client);
 
 	if (akm->auto_report) {
-		if (akm->use_hrtimer) {
-			hrtimer_cancel(&akm->poll_timer);
-			cancel_work_sync(&akm->dwork.work);
-		} else {
-			cancel_delayed_work_sync(&akm->dwork);
-		}
+		hrtimer_cancel(&akm->poll_timer);
+		cancel_work_sync(&akm->dwork.work);
 		destroy_workqueue(akm->work_queue);
 	}
 
