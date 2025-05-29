@@ -246,6 +246,7 @@ struct msm8916_asoc_mach_data {
 	void __iomem *vaddr_gpio_mux_quin_ctl;
 	void __iomem *vaddr_gpio_mux_pcm_ctl;
 	struct on_demand_supply wsa_switch_supply;
+	struct snd_info_entry *codec_root;
 };
 
 struct msm8x16_wcd_pdata {

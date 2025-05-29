@@ -29,6 +29,7 @@
 #include <sound/q6core.h>
 #include <sound/pcm_params.h>
 #include <soc/qcom/socinfo.h>
+#include <linux/input.h>
 #include "qdsp6v2/msm-pcm-routing-v2.h"
 #include "../codecs/wcd9xxx-common.h"
 #include "../codecs/wcd9306.h"
@@ -286,7 +287,7 @@ static void msm8939_ext_control(struct snd_soc_codec *codec)
 {
 	struct snd_soc_dapm_context *dapm = &codec->dapm;
 
-	mutex_lock(&dapm->codec->mutex);
+	mutex_lock(&codec->mutex);
 	pr_debug("%s: msm8939_spk_control = %d", __func__, msm8939_spk_control);
 	if (msm8939_spk_control == MSM8939_SPK_ON) {
 		snd_soc_dapm_enable_pin(dapm, "Lineout_1 amp");
@@ -295,7 +296,7 @@ static void msm8939_ext_control(struct snd_soc_codec *codec)
 		snd_soc_dapm_disable_pin(dapm, "Lineout_1 amp");
 		snd_soc_dapm_disable_pin(dapm, "Lineout_3 amp");
 	}
-	mutex_unlock(&dapm->codec->mutex);
+	mutex_unlock(&codec->mutex);
 	snd_soc_dapm_sync(dapm);
 }
 
@@ -327,7 +328,7 @@ static int msm_snd_enable_codec_ext_clk(struct snd_soc_codec *codec, int enable,
 					bool dapm)
 {
 	int ret = 0;
-	struct snd_soc_card *card = codec->card;
+	struct snd_soc_card *card = codec->component.card;
 	struct msm8939_asoc_mach_data *pdata = snd_soc_card_get_drvdata(card);
 
 	pr_debug("%s: enable = %d clk_users = %d\n",
@@ -650,7 +651,7 @@ static int msm_afe_set_config(struct snd_soc_codec *codec)
 {
 	int rc;
 	void *config_data;
-	struct snd_soc_card *card = codec->card;
+	struct snd_soc_card *card = codec->component.card;
 	struct msm8939_asoc_mach_data *pdata = snd_soc_card_get_drvdata(card);
 
 	pr_debug("%s: enter\n", __func__);
@@ -876,7 +877,7 @@ static int msm_audrx_init_tomtom(struct snd_soc_pcm_runtime *rtd)
 	struct snd_soc_dapm_context *dapm = &codec->dapm;
 	struct snd_soc_dai *cpu_dai = rtd->cpu_dai;
 	struct snd_soc_dai *codec_dai = rtd->codec_dai;
-	struct snd_soc_card *card = codec->card;
+	struct snd_soc_card *card = codec->component.card;
 	struct msm8939_asoc_mach_data *pdata = snd_soc_card_get_drvdata(card);
 
 	/* Codec SLIMBUS configuration
@@ -1019,7 +1020,7 @@ out:
 static void codec_enable_qfuse(struct snd_soc_codec *codec)
 {
 	if(codec == NULL ||
-		strcmp(codec->name, "tomtom_codec"))
+		strcmp(codec->component.name, "tomtom_codec"))
 		return;
 
 	msm_snd_enable_codec_ext_clk(codec, 1, false);
@@ -1039,7 +1040,7 @@ static void hs_detect_work(struct work_struct *work)
 			hs_detect_dwork);
 	if (!pdata || !pdata->codec)
 		return;
-	pr_debug("%s: enter codec %s\n", __func__, pdata->codec->name);
+	pr_debug("%s: enter codec %s\n", __func__, pdata->codec->component.name);
 	ret = pdata->msm8939_codec_fn.mbhc_hs_detect(pdata->codec,
 						&wcd9xxx_mbhc_cfg);
 	if (ret < 0)
@@ -1061,7 +1062,7 @@ static int msm_audrx_init(struct snd_soc_pcm_runtime *rtd)
 	struct snd_soc_dapm_context *dapm = &codec->dapm;
 	struct snd_soc_dai *cpu_dai = rtd->cpu_dai;
 	struct snd_soc_dai *codec_dai = rtd->codec_dai;
-	struct snd_soc_card *card = codec->card;
+	struct snd_soc_card *card = codec->component.card;
 	struct msm8939_asoc_mach_data *pdata = snd_soc_card_get_drvdata(card);
 	int ret = 0;
 
@@ -1271,7 +1272,7 @@ static int msm_slim_5_tx_be_hw_params_fixup(struct snd_soc_pcm_runtime *rtd,
 	    hw_param_interval(params, SNDRV_PCM_HW_PARAM_RATE);
 	struct snd_interval *channels =
 	    hw_param_interval(params, SNDRV_PCM_HW_PARAM_CHANNELS);
-	struct snd_soc_card *card = codec->card;
+	struct snd_soc_card *card = codec->component.card;
 	struct msm8939_asoc_mach_data *pdata = snd_soc_card_get_drvdata(card);
 
 	pr_debug("%s enter\n", __func__);
@@ -1357,7 +1358,7 @@ static int msm_snd_enable_quat_mclk(struct snd_soc_codec *codec, int enable,
 					bool dapm)
 {
 	int ret = 0;
-	struct snd_soc_card *card = codec->card;
+	struct snd_soc_card *card = codec->component.card;
 	struct msm8939_asoc_mach_data *pdata = snd_soc_card_get_drvdata(card);
 
 	pr_debug("%s: enable = %d clk_users = %d\n",
@@ -2449,7 +2450,7 @@ static struct snd_soc_card snd_card_msm;
 
 static bool msm8939_swap_gnd_mic(struct snd_soc_codec *codec)
 {
-	struct snd_soc_card *card = codec->card;
+	struct snd_soc_card *card = codec->component.card;
 	struct msm8939_asoc_mach_data *pdata = NULL;
 	int value = 0;
 

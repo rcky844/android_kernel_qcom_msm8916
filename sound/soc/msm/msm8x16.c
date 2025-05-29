@@ -314,26 +314,27 @@ static inline struct snd_mask *param_to_mask(struct snd_pcm_hw_params *p, int n)
 	return &(p->masks[n - SNDRV_PCM_HW_PARAM_FIRST_MASK]);
 }
 
-int msm8909_wsa881x_init(struct snd_soc_dapm_context *dapm)
+static int msm8909_wsa881x_init(struct snd_soc_component *component)
 {
 	u8 spkleft_ports[WSA881X_MAX_SWR_PORTS] = {100, 101, 102, 106};
 	u8 spkright_ports[WSA881X_MAX_SWR_PORTS] = {103, 104, 105, 107};
 	unsigned int ch_rate[WSA881X_MAX_SWR_PORTS] = {2400, 600, 300, 1200};
 	unsigned int ch_mask[WSA881X_MAX_SWR_PORTS] = {0x1, 0xF, 0x3, 0x3};
-	struct snd_soc_card *card = dapm->codec->card;
-	struct msm8916_asoc_mach_data *pdata = snd_soc_card_get_drvdata(card);
+	struct snd_soc_codec *codec = snd_soc_component_to_codec(component);
+	struct msm8916_asoc_mach_data *pdata;
+	struct snd_soc_dapm_context *dapm = &codec->dapm;
 	struct msm8909_auxcodec_prefix_map codec_prefix_map[MAX_AUX_CODECS] = {
 				{ "wsa881x.21170213", "SpkrLeft" },
 				{ "wsa881x.21170214", "SpkrRight" } };
 	u8 i;
 
-	if (!dapm->codec->name) {
+	if (!codec->component.name) {
 		pr_err("%s codec_name is NULL\n", __func__);
 		return -EINVAL;
 	}
 
 	for (i = 0; i < MAX_AUX_CODECS; i++) {
-		if (!strcmp(dapm->codec->name, codec_prefix_map[i].codec_name))
+		if (!strcmp(codec->component.name, codec_prefix_map[i].codec_name))
 			break;
 	}
 	if (i >= MAX_AUX_CODECS) {
@@ -342,23 +343,22 @@ int msm8909_wsa881x_init(struct snd_soc_dapm_context *dapm)
 	}
 
 	if (!strcmp(codec_prefix_map[i].codec_prefix, "SpkrLeft")) {
-		wsa881x_set_channel_map(dapm->codec, &spkleft_ports[0],
+		wsa881x_set_channel_map(codec, &spkleft_ports[0],
 				WSA881X_MAX_SWR_PORTS, &ch_mask[0],
 				&ch_rate[0]);
 
 	} else if (!strcmp(codec_prefix_map[i].codec_prefix, "SpkrRight")) {
-		wsa881x_set_channel_map(dapm->codec, &spkright_ports[0],
+		wsa881x_set_channel_map(codec, &spkright_ports[0],
 				WSA881X_MAX_SWR_PORTS, &ch_mask[0],
 				&ch_rate[0]);
 	} else {
-		dev_err(dapm->codec->dev, "%s: wrong codec name %s\n", __func__,
-			dapm->codec->name);
+		dev_err(codec->dev, "%s: wrong codec name %s\n", __func__,
+			codec->component.name);
 		return -EINVAL;
 	}
-	pdata = snd_soc_card_get_drvdata(card);
+	pdata = snd_soc_card_get_drvdata(component->card);
 	if (pdata && pdata->codec_root)
-		wsa881x_codec_info_create_codec_entry(pdata->codec_root,
-						      dapm->codec);
+		wsa881x_codec_info_create_codec_entry(pdata->codec_root, codec);
 
 	if (!strcmp(codec_prefix_map[i].codec_prefix, "SpkrLeft")) {
 		snd_soc_dapm_ignore_suspend(dapm, "SpkrLeft IN");
@@ -469,7 +469,7 @@ static int msm8x16_get_port_id(int be_id)
 
 static int enable_spk_ext_pa(struct snd_soc_codec *codec, int enable)
 {
-	struct snd_soc_card *card = codec->card;
+	struct snd_soc_card *card = codec->component.card;
 	struct msm8916_asoc_mach_data *pdata = snd_soc_card_get_drvdata(card);
 	int ret = 0;
 
@@ -630,7 +630,7 @@ static int loopback_mclk_put(struct snd_kcontrol *kcontrol,
 	struct msm8916_asoc_mach_data *pdata = NULL;
 	struct snd_soc_codec *codec = snd_kcontrol_chip(kcontrol);
 
-	pdata = snd_soc_card_get_drvdata(codec->card);
+	pdata = snd_soc_card_get_drvdata(codec->component.card);
 	conf_int_codec_mux(pdata);
 	pr_debug("%s: mclk_rsc_ref %d enable %ld\n",
 			__func__, atomic_read(&pdata->mclk_rsc_ref),
@@ -1122,9 +1122,9 @@ static int msm8x16_enable_codec_ext_clk(struct snd_soc_codec *codec,
 	int ret = 0;
 	struct msm8916_asoc_mach_data *pdata = NULL;
 
-	pdata = snd_soc_card_get_drvdata(codec->card);
+	pdata = snd_soc_card_get_drvdata(codec->component.card);
 	pr_debug("%s: codec name %s enable %d mclk ref counter %d\n",
-		   __func__, codec->name, enable,
+		   __func__, codec->component.name, enable,
 		   atomic_read(&pdata->mclk_rsc_ref));
 	if (enable) {
 		if (!atomic_read(&pdata->mclk_rsc_ref)) {
@@ -1273,7 +1273,7 @@ static int msm8x16_mclk_event(struct snd_soc_dapm_widget *w,
 	struct msm8916_asoc_mach_data *pdata = NULL;
 	int ret = 0;
 
-	pdata = snd_soc_card_get_drvdata(w->codec->card);
+	pdata = snd_soc_card_get_drvdata(w->codec->component.card);
 	pr_debug("%s: event = %d\n", __func__, event);
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -2834,7 +2834,7 @@ void disable_mclk(struct work_struct *work)
 
 static bool msm8x16_swap_gnd_mic(struct snd_soc_codec *codec)
 {
-	struct snd_soc_card *card = codec->card;
+	struct snd_soc_card *card = codec->component.card;
 	struct msm8916_asoc_mach_data *pdata = snd_soc_card_get_drvdata(card);
 	int value, ret;
 
