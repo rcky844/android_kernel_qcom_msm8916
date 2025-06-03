@@ -40,8 +40,6 @@
 #define LTR559_SENSOR_NAME		"ltr559als"
 #define DRIVER_VERSION		"1.0"
 
-#define SYS_AUTHORITY		(S_IRUGO|S_IWUGO)
-
 struct ps_thre {
 	int noise;
 	int th_hi;
@@ -734,11 +732,11 @@ static ssize_t ltr559_show_lux_data(struct device *dev,
 	return sprintf(buf, "%d\n", lux);
 }
 
-static DEVICE_ATTR(debug_regs, SYS_AUTHORITY, ltr559_show_debug_regs,
+static DEVICE_ATTR(debug_regs, S_IWUSR | S_IRUGO, ltr559_show_debug_regs,
 				ltr559_store_debug_regs);
-static DEVICE_ATTR(enable_als_sensor, SYS_AUTHORITY, ltr559_show_enable_als,
+static DEVICE_ATTR(enable_als_sensor, S_IWUSR | S_IRUGO, ltr559_show_enable_als,
 				ltr559_store_enable_als);
-static DEVICE_ATTR(enable, SYS_AUTHORITY, ltr559_show_enable_ps,
+static DEVICE_ATTR(enable, S_IWUSR | S_IRUGO, ltr559_show_enable_ps,
 				ltr559_store_enable_ps);
 static DEVICE_ATTR(info, S_IRUGO, ltr559_driver_info_show, NULL);
 static DEVICE_ATTR(raw_adc, S_IRUGO, ltr559_show_adc_data, NULL);
