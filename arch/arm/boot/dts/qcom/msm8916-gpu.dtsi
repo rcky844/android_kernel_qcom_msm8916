@@ -11,6 +11,23 @@
  */
 
 &soc {
+	msm_bus: qcom,kgsl-busmon {
+		label = "kgsl-busmon";
+		compatible = "qcom,kgsl-busmon";
+	};
+
+	/* To use BIMC based bus governor */
+	gpubw: qcom,gpubw {
+		compatible = "qcom,devbw";
+		governor = "bw_vbif";
+		qcom,src-dst-ports = <26 512>;
+		qcom,bw-tbl =
+			<    0 >,	/*   9.6 MHz */
+			< 1525 >,	/* 200.0 MHz */
+			< 3051 >,	/* 400.0 MHz */
+			< 4066 >;	/* 533.0 MHz */
+	};
+
 	msm_gpu: qcom,kgsl-3d0@01c00000 {
 		label = "kgsl-3d0";
 		compatible = "qcom,kgsl-3d0", "qcom,kgsl-3d";
@@ -150,6 +167,27 @@
 					qcom,bus-freq = <0>;
 				};
 			};
+		};
+	};
+
+	kgsl_msm_iommu: qcom,kgsl-iommu@1f00000 {
+		compatible = "qcom,kgsl-smmu-v2";
+		reg = <0x1f00000 0x10000>;
+		/*
+		 * The gpu can only program a single context bank
+		 * at this fixed offset.
+		 */
+		qcom,protect = <0xa000 0x1000>;
+		clocks = <&clock_gcc clk_gcc_smmu_cfg_clk>,
+		<&clock_gcc clk_gcc_gfx_tcu_clk>,
+		<&clock_gcc clk_gcc_gtcu_ahb_clk>,
+		<&clock_gcc clk_gcc_gfx_tbu_clk>;
+		clock-names = "scfg_clk", "gtcu_clk", "gtcu_iface_clk",
+				"gtbu_clk";
+		qcom,retention;
+		gfx3d_user: gfx3d_user {
+			compatible = "qcom,smmu-kgsl-cb";
+			qcom,gpu-offset = <0xa000>;
 		};
 	};
 };
